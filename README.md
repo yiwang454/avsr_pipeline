@@ -1,4 +1,5 @@
 # Audio-Visual Speech Recognition Pipeline
+Forked from git@github.com:ondrejklejch/avsr_pipeline.git . But for simpler commit and commit recordings: didn't use github fork repo directly.
 This repository contains a pipeline that can be used to extract talking faces from videos. The pipeline is based on [SyncNet](https://github.com/joonson/syncnet_python).
 
 ## Installation
