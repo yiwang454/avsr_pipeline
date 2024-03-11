@@ -44,7 +44,9 @@ class Video:
             )
 
     def trim(self):
+        # Force the audio length to match the (video) frame lengths.
         len_frames = len(self.frames)
+        # why divide by 640? probably because 16000 / 25 = 640
         len_audio = len(self.audio) // 640
 
         if len_frames >= len_audio:
@@ -162,9 +164,9 @@ class Video:
         return len(self.frames)
 
 
-def load_video(path):
+def load_video(path, audio_path):
     video = load_frames(path)
-    sample_rate, audio = load_audio(path)
+    sample_rate, audio = load_audio(audio_path)
     return Video(video, audio, sample_rate)
 
 
@@ -172,11 +174,11 @@ def load_frames(path):
     return Frames(path)
 
 
-def load_audio(path):
-    command = ("ffmpeg -v 8 -y -i %s -vn -acodec pcm_s16le -ar 16000 -ac 1 %s" % (path, path + ".wav"))
-    output = subprocess.call(command, shell=True, stdout=None)
-    sample_rate, audio = wavfile.read(path + ".wav")
-    os.remove(path + ".wav")
+def load_audio(audio_path):
+
+    # command = ("ffmpeg -v 8 -y -i %s -vn -acodec pcm_s16le -ar 16000 -ac 1 %s" % (path, path + ".wav"))
+    # output = subprocess.call(command, shell=True, stdout=None)
+    sample_rate, audio = wavfile.read(audio_path)
 
     return sample_rate, audio
 
