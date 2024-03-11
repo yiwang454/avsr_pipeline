@@ -15,7 +15,7 @@ import pandas as pd
 @click.option('--syncnet-threshold', default=2.5, help='SyncNet threshold.')
 @click.option('--min-speech-duration', default=20, help='Minimum speech segment duration.')
 @click.option('--max-pause-duration', default=10, help='Maximum pause duration between speech segments.')
-@click.argument('pattern')
+@click.argument('video_root_path')
 @click.argument('audio_root_path')
 @click.argument('output_dir')
 def main(device, scene_threshold, min_scene_duration, min_face_size, detect_face_every_nth_frame, syncnet_threshold, min_speech_duration, max_pause_duration, pattern, output_dir):
@@ -24,34 +24,37 @@ def main(device, scene_threshold, min_scene_duration, min_face_size, detect_face
 
     path_seg_info = dict()
 
-    for path in glob.glob(pattern):
-        name = path.split('/')[-1].rsplit('.', 1)[0]
-        print("Processing %s" % name)
+    for video_dir in os.listdir(video_root_path):
+        for video_file in os.listdir(os.path.join(video_root_path, video_dir)):
+            if os.path.join(video_root_path, video_dir, video_file).endswith("mp4"):
 
-        audio_path = path.replace('.mp4', '.wav').replace('video', 'audio')
-        video = load_video(path, audio_path)
-        scenes = segment_scenes(video, scene_threshold, min_scene_duration)
-        effective_time = 0
-        pieces = 0
+                name = path.split('/')[-1].rsplit('.', 1)[0]
+                print("Processing %s" % name)
 
-        for scene in scenes:
-            scene = scene.trim()
-            if (len(scene.frames) == 0):
-               continue
+                audio_path = path.replace('.mp4', '.wav').replace('video', 'audio')
+                video = load_video(path, audio_path)
+                scenes = segment_scenes(video, scene_threshold, min_scene_duration)
+                effective_time = 0
+                pieces = 0
 
-            facetracks = find_facetracks(face_detector, scene, min_face_size, detect_face_every_nth_frame)
-            for facetrack in facetracks:
-                segments = find_talking_segments(syncnet, facetrack, syncnet_threshold, min_speech_duration, max_pause_duration)
-                pieces += len(segments)
-                for segment in segments:
-                    start = segment.frame_offset / 25.
-                    end = start + len(segment.frames) / 25.
-                    effective_time += len(segment.frames) / 25.
+                for scene in scenes:
+                    scene = scene.trim()
+                    if (len(scene.frames) == 0):
+                       continue
 
-                    # segment.write('%s/%s-%.2f-%.2f.mp4' % (output_dir, name, start, end))
-        path_seg_info["path"] = path
-        path_seg_info["effective_time"] = effective_time
-        path_seg_info["pieces"] = pieces
+                    facetracks = find_facetracks(face_detector, scene, min_face_size, detect_face_every_nth_frame)
+                    for facetrack in facetracks:
+                        segments = find_talking_segments(syncnet, facetrack, syncnet_threshold, min_speech_duration, max_pause_duration)
+                        pieces += len(segments)
+                        for segment in segments:
+                            start = segment.frame_offset / 25.
+                            end = start + len(segment.frames) / 25.
+                            effective_time += len(segment.frames) / 25.
+
+                            # segment.write('%s/%s-%.2f-%.2f.mp4' % (output_dir, name, start, end))
+                path_seg_info["path"] = path
+                path_seg_info["effective_time"] = effective_time
+                path_seg_info["pieces"] = pieces
 
     df_seg_info = pd.DataFrame(path_seg_info)
     df_seg_info.to_csv(path_seg_info_path, index=False)
