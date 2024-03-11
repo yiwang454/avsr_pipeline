@@ -16,8 +16,8 @@ import pandas as pd
 @click.option('--min-speech-duration', default=20, help='Minimum speech segment duration.')
 @click.option('--max-pause-duration', default=10, help='Maximum pause duration between speech segments.')
 @click.argument('video_root_path')
-@click.argument('audio_root_path')
-@click.argument('output_dir')
+@click.argument('path_seg_info_path')
+# @click.argument('output_dir')
 def main(device, scene_threshold, min_scene_duration, min_face_size, detect_face_every_nth_frame, syncnet_threshold, min_speech_duration, max_pause_duration, pattern, output_dir):
     face_detector = load_face_detector(device)
     syncnet = load_syncnet(device)
