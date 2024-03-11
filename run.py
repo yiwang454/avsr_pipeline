@@ -23,7 +23,7 @@ def main(device, scene_threshold, min_scene_duration, min_face_size, detect_face
 
     path_seg_info = dict()
 
-    for video_dir in os.listdir(video_root_path):
+    for video_dir in os.listdir(pattern):
         for video_file in os.listdir(os.path.join(video_root_path, video_dir)):
             if os.path.join(video_root_path, video_dir, video_file).endswith("mp4"):
 
@@ -56,7 +56,7 @@ def main(device, scene_threshold, min_scene_duration, min_face_size, detect_face
                 path_seg_info["pieces"] = pieces
 
     df_seg_info = pd.DataFrame(path_seg_info)
-    df_seg_info.to_csv(path_seg_info_path, index=False)
+    df_seg_info.to_csv(output_dir, index=False)
 
 
 if __name__ == '__main__':
