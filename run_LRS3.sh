@@ -1,4 +1,4 @@
-  resampled_dir="/mnt/ceph_rbd/muavic_project/muavic/fr/video/train"
+  resampled_dir="/mnt/ceph_rbd/muavic_project/muavic/fr/video/valid"
   output_file="/mnt/ceph_rbd/muavic_project/avsr_pipeline/segments.csv"
   cd /mnt/ceph_rbd/muavic_project/avsr_pipeline
   for i in 1; do
