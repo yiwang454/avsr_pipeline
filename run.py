@@ -5,6 +5,7 @@ from scene import segment_scenes
 from facetrack import load_face_detector, find_facetracks
 from syncnet import load_syncnet, find_talking_segments
 import pandas as pd
+import os
 
 @click.command(context_settings=dict(show_default=True))
 @click.option('--device', default='cuda:0', help='CUDA device.')
@@ -24,8 +25,9 @@ def main(device, scene_threshold, min_scene_duration, min_face_size, detect_face
     path_seg_info = dict()
 
     for video_dir in os.listdir(pattern):
-        for video_file in os.listdir(os.path.join(video_root_path, video_dir)):
-            if os.path.join(video_root_path, video_dir, video_file).endswith("mp4"):
+        for video_file in os.listdir(os.path.join(pattern, video_dir)):
+            path = os.path.join(pattern, video_dir, video_file)
+            if path.endswith("mp4"):
 
                 name = path.split('/')[-1].rsplit('.', 1)[0]
                 print("Processing %s" % name)
