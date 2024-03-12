@@ -6,6 +6,8 @@ from facetrack import load_face_detector, find_facetracks
 from syncnet import load_syncnet, find_talking_segments
 import pandas as pd
 import os
+from functools import partial
+from tqdm.contrib.concurrent import process_map
 
 @click.command(context_settings=dict(show_default=True))
 @click.option('--device', default='cuda:0', help='CUDA device.')
