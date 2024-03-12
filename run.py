@@ -21,8 +21,7 @@ import os
 def main(device, scene_threshold, min_scene_duration, min_face_size, detect_face_every_nth_frame, syncnet_threshold, min_speech_duration, max_pause_duration, pattern, output_dir):
     face_detector = load_face_detector(device)
     syncnet = load_syncnet(device)
-
-    path_seg_info = dict()
+    path_seg_info_paralleled = []
 
     for video_dir in os.listdir(pattern):
         for video_file in os.listdir(os.path.join(pattern, video_dir)):
@@ -31,6 +30,7 @@ def main(device, scene_threshold, min_scene_duration, min_face_size, detect_face
 
                 name = path.split('/')[-1].rsplit('.', 1)[0]
                 print("Processing %s" % name)
+                path_seg_info = dict()
 
                 audio_path = path.replace('.mp4', '.wav').replace('video', 'audio')
                 video = load_video(path, audio_path)
@@ -54,10 +54,11 @@ def main(device, scene_threshold, min_scene_duration, min_face_size, detect_face
 
                             # segment.write('%s/%s-%.2f-%.2f.mp4' % (output_dir, name, start, end))
                 path_seg_info["path"] = path
-                path_seg_info["effective_time"] = effective_time
-                path_seg_info["pieces"] = pieces
+                path_seg_info["effective_time"] = [effective_time]
+                path_seg_info["pieces"] = [pieces]
+                path_seg_info_paralleled.append(path_seg_info)
 
-    df_seg_info = pd.DataFrame(path_seg_info)
+    df_seg_info = pd.DataFrame(path_seg_info_paralleled)
     df_seg_info.to_csv(output_dir, index=False)
 
 
