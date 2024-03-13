@@ -56,42 +56,6 @@ def get_seg_info(video_path, parameters):
     path_seg_info["pieces"] = pieces
     return path_seg_info
 
-def get_talking_seg(video_path, parameters):
-    device, scene_threshold, min_scene_duration, min_face_size, \
-    detect_face_every_nth_frame, syncnet_threshold, min_speech_duration, \
-    max_pause_duration, scene_change_detection, track_face = parameters
-
-    face_detector = load_face_detector(device)
-    syncnet = load_syncnet(device)
-    path_seg_info = dict()
-    name = video_path.split('/')[-1].rsplit('.', 1)[0]
-    print("Processing %s" % name)
-
-    audio_path = video_path.replace('.mp4', '.wav').replace('video', 'audio')
-    video = load_video(video_path, audio_path)
-    effective_time = 0
-    pieces = 0
-
-    scene = video
-
-    scene = scene.trim()
-    assert (len(scene.frames) != 0)
-
-
-    segments = list(find_talking_segments(syncnet, scene, syncnet_threshold, min_speech_duration,
-                                     max_pause_duration))
-    pieces += len(segments)
-    for segment in segments:
-        start = segment.frame_offset / 25.
-        end = start + len(segment.frames) / 25.
-        effective_time += len(segment.frames) / 25.
-
-        # segment.write('%s/%s-%.2f-%.2f.mp4' % (output_dir, name, start, end))
-    path_seg_info["path"] = video_path
-    path_seg_info["effective_time"] = effective_time
-    path_seg_info["pieces"] = pieces
-    return path_seg_info
-
 @click.command(context_settings=dict(show_default=True))
 @click.option('--device', default='cuda:0', help='CUDA device.')
 @click.option('--scene-threshold', default=0.004, help='Threshold for histogram based shot detection.')
@@ -123,7 +87,7 @@ def main(device, scene_threshold, min_scene_duration, min_face_size,
     detect_face_every_nth_frame, syncnet_threshold, min_speech_duration, max_pause_duration, scene_change_detection, track_face]
 
     with Pool(num_workers) as pool:
-        path_seg_info_paralleled = pool.map(partial(get_talking_seg, parameters=parameters), path_list)
+        path_seg_info_paralleled = pool.map(partial(get_seg_info, parameters=parameters), path_list)
 
     print("len(path_seg_info_paralleled)", len(path_seg_info_paralleled))
     print(len(path_seg_info_paralleled) == len(path_list))
