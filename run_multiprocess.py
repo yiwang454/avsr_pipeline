@@ -33,8 +33,8 @@ def get_seg_info(video_path, parameters):
 
         facetracks = find_facetracks(face_detector, scene, min_face_size, detect_face_every_nth_frame)
         for facetrack in facetracks:
-            segments = find_talking_segments(syncnet, facetrack, syncnet_threshold, min_speech_duration,
-                                             max_pause_duration)
+            segments = list(find_talking_segments(syncnet, facetrack, syncnet_threshold, min_speech_duration,
+                                             max_pause_duration))
             pieces += len(segments)
             for segment in segments:
                 start = segment.frame_offset / 25.
