@@ -10,18 +10,6 @@ from functools import partial
 from tqdm.contrib.concurrent import process_map
 from multiprocessing import Pool
 
-@click.command(context_settings=dict(show_default=True))
-@click.option('--device', default='cuda:0', help='CUDA device.')
-@click.option('--scene-threshold', default=0.004, help='Threshold for histogram based shot detection.')
-@click.option('--min-scene-duration', default=25, help='Minimum scene duration in frames.')
-@click.option('--min-face-size', default=50, help='Minimum mean face size in pixels.')
-@click.option('--detect-face-every-nth-frame', default=1, help='Detect faces every nth frames.')
-@click.option('--syncnet-threshold', default=2.5, help='SyncNet threshold.')
-@click.option('--min-speech-duration', default=20, help='Minimum speech segment duration.')
-@click.option('--max-pause-duration', default=10, help='Maximum pause duration between speech segments.')
-@click.option('--num-workers', default=4, help='Number of parallel workers.')
-@click.argument('pattern')
-@click.argument('output_dir')
 def get_seg_info(video_path, parameters):
     device, scene_threshold, min_scene_duration, min_face_size, \
     detect_face_every_nth_frame, syncnet_threshold, min_speech_duration, max_pause_duration = parameters
@@ -59,6 +47,18 @@ def get_seg_info(video_path, parameters):
     path_seg_info["pieces"] = pieces
     return path_seg_info
 
+@click.command(context_settings=dict(show_default=True))
+@click.option('--device', default='cuda:0', help='CUDA device.')
+@click.option('--scene-threshold', default=0.004, help='Threshold for histogram based shot detection.')
+@click.option('--min-scene-duration', default=25, help='Minimum scene duration in frames.')
+@click.option('--min-face-size', default=50, help='Minimum mean face size in pixels.')
+@click.option('--detect-face-every-nth-frame', default=1, help='Detect faces every nth frames.')
+@click.option('--syncnet-threshold', default=2.5, help='SyncNet threshold.')
+@click.option('--min-speech-duration', default=20, help='Minimum speech segment duration.')
+@click.option('--max-pause-duration', default=10, help='Maximum pause duration between speech segments.')
+@click.option('--num-workers', default=4, help='Number of parallel workers.')
+@click.argument('pattern')
+@click.argument('output_dir')
 def main(device, scene_threshold, min_scene_duration, min_face_size,
          detect_face_every_nth_frame, syncnet_threshold, min_speech_duration,
          max_pause_duration, num_workers, pattern, output_dir):
