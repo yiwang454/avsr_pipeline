@@ -42,7 +42,7 @@ def get_seg_info(video_path, parameters):
                 effective_time += len(segment.frames) / 25.
 
                 # segment.write('%s/%s-%.2f-%.2f.mp4' % (output_dir, name, start, end))
-    path_seg_info["path"] = path
+    path_seg_info["path"] = video_path
     path_seg_info["effective_time"] = effective_time
     path_seg_info["pieces"] = pieces
     return path_seg_info
