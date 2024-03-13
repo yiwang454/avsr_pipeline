@@ -25,7 +25,7 @@ from multiprocessing import Pool
 
 def main(device, scene_threshold, min_scene_duration, min_face_size,
          detect_face_every_nth_frame, syncnet_threshold, min_speech_duration,
-         max_pause_duration, pattern, output_dir):
+         max_pause_duration, num_workers, pattern, output_dir):
 
     path_list = []
     for video_dir in os.listdir(pattern):
