@@ -5,3 +5,6 @@ data
 env
 .idea
 
+# results file (temporary)
+*.csv
+
