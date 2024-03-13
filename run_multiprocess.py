@@ -28,6 +28,7 @@ def get_seg_info(video_path, parameters):
 
     if scene_change_detection:
         scenes = segment_scenes(video, scene_threshold, min_scene_duration)
+        print("scenes xs ys ...".format(scenes[0].xs, scenes[0].ys, scenes[0].sizes))
     else:
         scenes = [video]
 
@@ -38,6 +39,7 @@ def get_seg_info(video_path, parameters):
 
         if track_face:
             facetracks = find_facetracks(face_detector, scene, min_face_size, detect_face_every_nth_frame)
+            print("facetracks xs ys ...".format(facetracks[0].xs, facetracks[0].ys, facetracks[0].sizes))
         else:
             facetracks = [scene]
 
