@@ -16,9 +16,12 @@ import os
 @click.option('--syncnet-threshold', default=2.5, help='SyncNet threshold.')
 @click.option('--min-speech-duration', default=20, help='Minimum speech segment duration.')
 @click.option('--max-pause-duration', default=10, help='Maximum pause duration between speech segments.')
+@click.option('--scene-change-detection', default=False, help='If true: screen out videos with shot changes.')
 @click.argument('pattern')
 @click.argument('output_dir')
-def main(device, scene_threshold, min_scene_duration, min_face_size, detect_face_every_nth_frame, syncnet_threshold, min_speech_duration, max_pause_duration, pattern, output_dir):
+def main(device, scene_threshold, min_scene_duration,
+         min_face_size, detect_face_every_nth_frame, syncnet_threshold,
+         min_speech_duration, max_pause_duration, scene_change_detection, pattern, output_dir):
     face_detector = load_face_detector(device)
     syncnet = load_syncnet(device)
     path_seg_info_paralleled = []
@@ -34,10 +37,12 @@ def main(device, scene_threshold, min_scene_duration, min_face_size, detect_face
 
                 audio_path = path.replace('.mp4', '.wav').replace('video', 'audio')
                 video = load_video(path, audio_path)
-                scenes = segment_scenes(video, scene_threshold, min_scene_duration)
                 effective_time = 0
                 pieces = 0
-
+                if scene_change_detection:
+                    scenes = segment_scenes(video, scene_threshold, min_scene_duration)
+                else:
+                    scenes = video
                 for scene in scenes:
                     scene = scene.trim()
                     if (len(scene.frames) == 0):

@@ -12,7 +12,8 @@ from multiprocessing import Pool
 
 def get_seg_info(video_path, parameters):
     device, scene_threshold, min_scene_duration, min_face_size, \
-    detect_face_every_nth_frame, syncnet_threshold, min_speech_duration, max_pause_duration = parameters
+    detect_face_every_nth_frame, syncnet_threshold, min_speech_duration, \
+    max_pause_duration, scene_change_detection, track_face = parameters
 
     face_detector = load_face_detector(device)
     syncnet = load_syncnet(device)
@@ -22,16 +23,24 @@ def get_seg_info(video_path, parameters):
 
     audio_path = video_path.replace('.mp4', '.wav').replace('video', 'audio')
     video = load_video(video_path, audio_path)
-    scenes = segment_scenes(video, scene_threshold, min_scene_duration)
     effective_time = 0
     pieces = 0
+
+    if scene_change_detection:
+        scenes = segment_scenes(video, scene_threshold, min_scene_duration)
+    else:
+        scenes = [video]
 
     for scene in scenes:
         scene = scene.trim()
         if (len(scene.frames) == 0):
             continue
 
-        facetracks = find_facetracks(face_detector, scene, min_face_size, detect_face_every_nth_frame)
+        if track_face:
+            facetracks = find_facetracks(face_detector, scene, min_face_size, detect_face_every_nth_frame)
+        else:
+            facetracks = [scene]
+
         for facetrack in facetracks:
             segments = list(find_talking_segments(syncnet, facetrack, syncnet_threshold, min_speech_duration,
                                              max_pause_duration))
@@ -57,11 +66,13 @@ def get_seg_info(video_path, parameters):
 @click.option('--min-speech-duration', default=20, help='Minimum speech segment duration.')
 @click.option('--max-pause-duration', default=10, help='Maximum pause duration between speech segments.')
 @click.option('--num-workers', default=4, help='Number of parallel workers.')
+@click.option('--scene-change-detection', default=False, help='If true: screen out videos with shot changes.')
+@click.option('--track-face', default=False, help='If true: detect face to get facetrack.')
 @click.argument('pattern')
 @click.argument('output_dir')
 def main(device, scene_threshold, min_scene_duration, min_face_size,
          detect_face_every_nth_frame, syncnet_threshold, min_speech_duration,
-         max_pause_duration, num_workers, pattern, output_dir):
+         max_pause_duration, num_workers, scene_change_detection, track_face, pattern, output_dir):
 
     path_list = []
     for video_dir in os.listdir(pattern):
@@ -70,8 +81,10 @@ def main(device, scene_threshold, min_scene_duration, min_face_size,
             if path.endswith("mp4"):
                 path_list.append(path)
 
+    print("scene-change-detection, track-face", scene_change_detection, track_face)
+
     parameters = [device, scene_threshold, min_scene_duration, min_face_size, \
-    detect_face_every_nth_frame, syncnet_threshold, min_speech_duration, max_pause_duration]
+    detect_face_every_nth_frame, syncnet_threshold, min_speech_duration, max_pause_duration, scene_change_detection, track_face]
 
     with Pool(num_workers) as pool:
         path_seg_info_paralleled = pool.map(partial(get_seg_info, parameters=parameters), path_list)
@@ -80,6 +93,10 @@ def main(device, scene_threshold, min_scene_duration, min_face_size,
     print(len(path_seg_info_paralleled) == len(path_list))
     df_seg_info = pd.DataFrame(path_seg_info_paralleled)
     df_seg_info.to_csv(output_dir, index=False)
+
+    path_seg_info_paralleled_sorted = sorted(path_seg_info_paralleled, key=lambda x:int(x["path"].split("_")[-1].strip('.mp4')), reverse=True)
+    df_seg_info_sorted = pd.DataFrame(path_seg_info_paralleled_sorted)
+    df_seg_info_sorted.to_csv(output_dir.strip(".csv") + "_sorted.csv", index=False)
 
 
 if __name__ == '__main__':
